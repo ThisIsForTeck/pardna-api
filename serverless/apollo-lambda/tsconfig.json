@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "preserveConstEnums": true,
+    "strictNullChecks": true,
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "sourceRoot": "/",
+    "target": "esnext",
+    "outDir": ".build",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "lib": [
+      "esnext"
+    ],
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "isolatedModules": true,
+    "noImplicitAny": true
+  },
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
