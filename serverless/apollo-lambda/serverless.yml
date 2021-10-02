@@ -3,15 +3,15 @@ app: pardna-api
 service: apollo-lambda
 variablesResolutionMode: 20210326
 
-frameworkVersion: '2'
+frameworkVersion: "2"
 
 provider:
   name: aws
   runtime: nodejs14.x
   region: eu-west-2
   environment:
-    DATABASE_URL: ${ssm:/black-history/keys/mongodb}
-    SENTRY_DSN: ${ssm:/black-history/keys/sentry}
+    DATABASE_URL: ${ssm:/pardna/keys/mongodb}
+    SENTRY_DSN: ${ssm:/pardna/keys/sentry}
   lambdaHashingVersion: 20201221
 
 plugins:
