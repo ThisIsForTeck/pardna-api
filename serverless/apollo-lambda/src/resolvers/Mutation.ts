@@ -6,12 +6,12 @@ type CreatePersonArgs = {
 };
 
 const Mutations = {
-  createPerson: async (
+  createUser: async (
     parent: any,
     { firstName, lastName }: CreatePersonArgs,
     context: Context,
   ) => {
-    return context.prisma.person.create({
+    return context.prisma.user.create({
       data: { firstName, lastName },
     });
   },

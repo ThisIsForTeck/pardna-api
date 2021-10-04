@@ -10,15 +10,15 @@ Sentry.AWSLambda.init({
 });
 
 const typeDefs = gql`
-  type Person {
+  type User {
     firstName: String!
     lastName: String!
   }
   type Query {
-    people: [Person]
+    users: [User]
   }
   type Mutation {
-    createPerson(firstName: String!, lastName: String!): Person!
+    createUser(firstName: String!, lastName: String!): User!
   }
 `;
 

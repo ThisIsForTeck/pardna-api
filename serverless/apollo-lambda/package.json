@@ -4,7 +4,7 @@
   "author": "hi@ezeikel.dev",
   "version": "1.0.0",
   "scripts": {
-    "dev": "NODE_ENV=test yarn prisma:generate && sls offline --aws-profile ezeikel-admin",
+    "dev": "NODE_ENV=test yarn prisma:generate && sls offline --aws-profile this-is-for-teck",
     "lint": "jest --config test/jest.lint.js",
     "check-types": "tsc",
     "prettier": "prettier --ignore-path .gitignore --write \"**/*.+(js|jsx|json|ts|tsx|css|html|md)\"",
@@ -17,7 +17,9 @@
     "test:e2e": "is-ci \"test:e2e:run\" \"test:e2e:dev\"",
     "test:e2e:run": "start-server-and-test start http://localhost:3000 cy:run",
     "test:e2e:dev": "start-server-and-test dev http://localhost:3000 cy:open",
-    "deploy": "NODE_ENV=production sls deploy --aws-profile ezeikel-admin",
+    "deploy": "NODE_ENV=production sls deploy --aws-profile this-is-for-teck",
+    "undeploy": "sls remove --aws-profile this-is-for-teck",
+    "create:domain": "sls create_domain --aws-profile this-is-for-teck",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "prepare": "cd ../.. && husky install serverless/apollo-lambda/.husky"
@@ -34,8 +36,10 @@
     ]
   },
   "dependencies": {
+    "@prisma/client": "^3.1.1",
     "@sentry/serverless": "^6.13.2",
-    "apollo-server-lambda": "^3.3.0"
+    "apollo-server-lambda": "^3.3.0",
+    "graphql": "^15.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
