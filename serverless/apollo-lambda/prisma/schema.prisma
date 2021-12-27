@@ -9,8 +9,28 @@ generator client {
   binaryTargets   = ["native", "rhel-openssl-1.0.x"]
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
-  id        String @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   firstName String
   lastName  String
+  email     String   @unique
+  password  String
+  role      Role?    @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Pardna {
+  id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pardnas")
 }
