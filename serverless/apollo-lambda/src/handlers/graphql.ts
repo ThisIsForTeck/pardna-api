@@ -15,6 +15,16 @@ Sentry.AWSLambda.init({
 const typeDefs = gql`
   scalar Date
 
+  enum Occurance {
+    DAILY
+    WEEKLY
+    MONTHLY
+  }
+
+  input ParticipantInput {
+    name: String!
+  }
+
   type SuccessMessage {
     message: String
   }
@@ -27,6 +37,20 @@ const typeDefs = gql`
     role: String!
     createdAt: Date!
     updatedAt: Date!
+  }
+
+  type Participant {
+    id: String!
+    name: String!
+  }
+
+  type Pardna {
+    id: String!
+    name: String
+    banker: User
+    participants: [Participant]
+    sumOfHand: Int
+    drawingOccurance: Occurance
   }
 
   type Query {
@@ -42,6 +66,12 @@ const typeDefs = gql`
     ): User!
     logIn(email: String!, password: String!): User!
     logOut: SuccessMessage!
+    createPardna(
+      name: String
+      participants: [ParticipantInput]
+      sumOfHand: Int
+      drawingOccurance: Occurance
+    ): Pardna
   }
 `;
 

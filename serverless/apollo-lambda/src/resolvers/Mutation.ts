@@ -2,6 +2,16 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Context } from "../context";
 
+enum Occurance {
+  DAILY = "DAILY",
+  WEEKLY = "WEEKLY",
+  MONTHLY = "MONTHLY",
+}
+
+type Participant = {
+  name: string;
+};
+
 type CreateUserArgs = {
   firstName: string;
   lastName: string;
@@ -14,6 +24,13 @@ type LogInArgs = {
   password: string;
 };
 
+type CreatePardnaArgs = {
+  name: string;
+  participants: Participant[];
+  sumOfHand: number;
+  drawingOccurance: Occurance;
+};
+
 const Mutations = {
   createUser: async (
     parent: any,
@@ -22,7 +39,7 @@ const Mutations = {
   ) => {
     const lowerCaseEmail = email.toLowerCase();
 
-    // TODO: Do some kind of check for taken username aswell
+    // TODO: do some kind of check for taken username aswell
     const exists = await context.prisma.user.findUnique({ where: { email } });
 
     if (exists) {
@@ -104,6 +121,32 @@ const Mutations = {
     context.res.clearCookie("token");
 
     return { message: "Goodbye!" };
+  },
+  createPardna: async (
+    parent: any,
+    { name, participants, sumOfHand, drawingOccurance }: CreatePardnaArgs,
+    context: Context,
+  ) => {
+    const {
+      user: { id: userId },
+    } = context;
+
+    // create pardna in the db
+    return context.prisma.pardna.create({
+      data: {
+        name,
+        banker: {
+          connect: {
+            id: userId,
+          },
+        },
+        participants: {
+          create: participants?.map(participant => participant) || undefined,
+        },
+        sumOfHand,
+        drawingOccurance,
+      },
+    });
   },
 };
 
