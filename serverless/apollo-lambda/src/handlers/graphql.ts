@@ -40,8 +40,8 @@ const typeDefs = gql`
       email: String!
       password: String!
     ): User!
-    logInUser(email: String!, password: String!): User!
-    logOutUser: SuccessMessage!
+    logIn(email: String!, password: String!): User!
+    logOut: SuccessMessage!
   }
 `;
 
