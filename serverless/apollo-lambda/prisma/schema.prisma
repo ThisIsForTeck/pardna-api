@@ -14,7 +14,7 @@ enum Role {
   ADMIN
 }
 
-enum Occurance {
+enum Frequency {
   DAILY
   WEEKLY
   MONTHLY
@@ -52,7 +52,10 @@ model Pardna {
   userId           String        @unique @db.ObjectId
   participants     Participant[] // TODO: max 6
   sumOfHand        Float // TODO: max £50
-  drawingOccurance Occurance     @default(MONTHLY)
+  drawingFrequency Frequency     @default(MONTHLY)
+  drawDay          Int? // e.g 01, 15, 30
+  startDate        DateTime?
+  duration         Int? // number of months
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 

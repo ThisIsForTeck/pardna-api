@@ -1,11 +1,11 @@
 import { ApolloServer, gql } from "apollo-server-lambda";
 import express from "express";
-import { GraphQLScalarType, Kind } from "graphql";
 import cookieParser from "cookie-parser";
 import * as Sentry from "@sentry/serverless";
 import Query from "../resolvers/Query";
 import Mutation from "../resolvers/Mutation";
 import { createContext } from "../context";
+import Custom from "../resolvers/Custom";
 
 Sentry.AWSLambda.init({
   dsn: process.env.SENTRY_DSN,
@@ -15,7 +15,7 @@ Sentry.AWSLambda.init({
 const typeDefs = gql`
   scalar Date
 
-  enum Occurance {
+  enum Frequency {
     DAILY
     WEEKLY
     MONTHLY
@@ -50,11 +50,16 @@ const typeDefs = gql`
     banker: User
     participants: [Participant]
     sumOfHand: Int
-    drawingOccurance: Occurance
+    drawingFrequency: Frequency
+    drawDay: Int
+    startDate: Date
+    duration: Int
+    endDate: Date
   }
 
   type Query {
     users: [User]
+    pardnas: [Pardna]
   }
 
   type Mutation {
@@ -70,28 +75,13 @@ const typeDefs = gql`
       name: String
       participants: [ParticipantInput]
       sumOfHand: Int
-      drawingOccurance: Occurance
+      drawingFrequency: Frequency
     ): Pardna
   }
 `;
 
 const resolvers = {
-  Date: new GraphQLScalarType({
-    name: "Date",
-    description: "Date custom scalar type",
-    serialize(value) {
-      return value.getTime(); // value sent to client
-    },
-    parseValue(value) {
-      return new Date(value); // value from the client
-    },
-    parseLiteral(ast) {
-      if (ast.kind === Kind.INT) {
-        return new Date(ast.value); // ast value is always in string format
-      }
-      return null;
-    },
-  }),
+  ...Custom,
   Query,
   Mutation,
 };

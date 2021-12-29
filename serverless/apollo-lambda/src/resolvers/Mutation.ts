@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Context } from "../context";
 
-enum Occurance {
+enum Frequency {
   DAILY = "DAILY",
   WEEKLY = "WEEKLY",
   MONTHLY = "MONTHLY",
@@ -28,7 +28,10 @@ type CreatePardnaArgs = {
   name: string;
   participants: Participant[];
   sumOfHand: number;
-  drawingOccurance: Occurance;
+  drawingFrequency: Frequency;
+  drawDay: number;
+  startDate: Date;
+  duration: number;
 };
 
 const Mutations = {
@@ -124,7 +127,7 @@ const Mutations = {
   },
   createPardna: async (
     parent: any,
-    { name, participants, sumOfHand, drawingOccurance }: CreatePardnaArgs,
+    { name, participants, sumOfHand, drawingFrequency }: CreatePardnaArgs,
     context: Context,
   ) => {
     const {
@@ -144,10 +147,20 @@ const Mutations = {
           create: participants?.map(participant => participant) || undefined,
         },
         sumOfHand,
-        drawingOccurance,
+        drawingFrequency,
       },
     });
   },
+  // addParticipants: async (
+  //   parent: any,
+  //   { participants }: CreatePardnaArgs,
+  //   context: Context,
+  // ) => {},
+  // removeParticipants: async (
+  //   parent: any,
+  //   { participants }: CreatePardnaArgs,
+  //   context: Context,
+  // ) => {},
 };
 
 export default Mutations;
