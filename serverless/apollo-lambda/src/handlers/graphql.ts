@@ -1,11 +1,11 @@
 import { ApolloServer, gql } from "apollo-server-lambda";
 import express from "express";
-import { GraphQLScalarType, Kind } from "graphql";
 import cookieParser from "cookie-parser";
 import * as Sentry from "@sentry/serverless";
 import Query from "../resolvers/Query";
 import Mutation from "../resolvers/Mutation";
 import { createContext } from "../context";
+import Custom from "../resolvers/Custom";
 
 Sentry.AWSLambda.init({
   dsn: process.env.SENTRY_DSN,
@@ -14,6 +14,25 @@ Sentry.AWSLambda.init({
 
 const typeDefs = gql`
   scalar Date
+
+  enum Frequency {
+    DAILY
+    WEEKLY
+    MONTHLY
+  }
+
+  input ParticipantInput {
+    name: String!
+  }
+
+  input RemoveParticipantInput {
+    id: String!
+  }
+
+  input UpdateParticipantInput {
+    id: String!
+    name: String!
+  }
 
   type SuccessMessage {
     message: String
@@ -29,8 +48,27 @@ const typeDefs = gql`
     updatedAt: Date!
   }
 
+  type Participant {
+    id: String!
+    name: String!
+  }
+
+  type Pardna {
+    id: String!
+    name: String
+    banker: User
+    participants: [Participant]
+    sumOfHand: Int
+    drawingFrequency: Frequency
+    drawDay: Int
+    startDate: Date
+    duration: Int
+    endDate: Date
+  }
+
   type Query {
     users: [User]
+    pardnas: [Pardna]
   }
 
   type Mutation {
@@ -42,26 +80,28 @@ const typeDefs = gql`
     ): User!
     logIn(email: String!, password: String!): User!
     logOut: SuccessMessage!
+    createPardna(
+      name: String
+      participants: [ParticipantInput]
+      startDate: Date
+      sumOfHand: Int
+      drawingFrequency: Frequency
+    ): Pardna
+    updatePardna(
+      id: String
+      name: String
+      addParticipants: [ParticipantInput]
+      removeParticipants: [RemoveParticipantInput]
+      updateParticipants: [UpdateParticipantInput]
+      startDate: Date
+      sumOfHand: Int
+      drawingFrequency: Frequency
+    ): Pardna
   }
 `;
 
 const resolvers = {
-  Date: new GraphQLScalarType({
-    name: "Date",
-    description: "Date custom scalar type",
-    serialize(value) {
-      return value.getTime(); // value sent to client
-    },
-    parseValue(value) {
-      return new Date(value); // value from the client
-    },
-    parseLiteral(ast) {
-      if (ast.kind === Kind.INT) {
-        return new Date(ast.value); // ast value is always in string format
-      }
-      return null;
-    },
-  }),
+  ...Custom,
   Query,
   Mutation,
 };

@@ -14,23 +14,50 @@ enum Role {
   ADMIN
 }
 
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 model User {
   id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   firstName String
   lastName  String
   email     String   @unique
   password  String
-  role      Role?    @default(USER)
+  role      Role     @default(USER)
+  pardna    Pardna?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
 }
 
-model Pardna {
+model Participant {
   id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  name      String
+  pardna    Pardna?  @relation(fields: [pardnaId], references: [id])
+  pardnaId  String?  @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("participants")
+}
+
+model Pardna {
+  id               String        @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  name             String?
+  banker           User          @relation(fields: [userId], references: [id])
+  userId           String        @unique @db.ObjectId
+  participants     Participant[] // TODO: max 6
+  sumOfHand        Float         @default(10.00) // TODO: max £50
+  drawingFrequency Frequency     @default(MONTHLY)
+  drawDay          Int           @default(1) // e.g 01, 15, 30
+  startDate        DateTime
+  duration         Int           @default(12) // number of months
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@map("pardnas")
 }
