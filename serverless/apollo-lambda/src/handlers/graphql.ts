@@ -25,6 +25,15 @@ const typeDefs = gql`
     name: String!
   }
 
+  input RemoveParticipantInput {
+    id: String!
+  }
+
+  input UpdateParticipantInput {
+    id: String!
+    name: String!
+  }
+
   type SuccessMessage {
     message: String
   }
@@ -74,6 +83,17 @@ const typeDefs = gql`
     createPardna(
       name: String
       participants: [ParticipantInput]
+      startDate: Date
+      sumOfHand: Int
+      drawingFrequency: Frequency
+    ): Pardna
+    updatePardna(
+      id: String
+      name: String
+      addParticipants: [ParticipantInput]
+      removeParticipants: [RemoveParticipantInput]
+      updateParticipants: [UpdateParticipantInput]
+      startDate: Date
       sumOfHand: Int
       drawingFrequency: Frequency
     ): Pardna

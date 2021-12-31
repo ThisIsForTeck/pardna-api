@@ -26,7 +26,7 @@ model User {
   lastName  String
   email     String   @unique
   password  String
-  role      Role?    @default(USER)
+  role      Role     @default(USER)
   pardna    Pardna?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -51,11 +51,11 @@ model Pardna {
   banker           User          @relation(fields: [userId], references: [id])
   userId           String        @unique @db.ObjectId
   participants     Participant[] // TODO: max 6
-  sumOfHand        Float // TODO: max £50
+  sumOfHand        Float         @default(10.00) // TODO: max £50
   drawingFrequency Frequency     @default(MONTHLY)
-  drawDay          Int? // e.g 01, 15, 30
-  startDate        DateTime?
-  duration         Int? // number of months
+  drawDay          Int           @default(1) // e.g 01, 15, 30
+  startDate        DateTime
+  duration         Int           @default(12) // number of months
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 

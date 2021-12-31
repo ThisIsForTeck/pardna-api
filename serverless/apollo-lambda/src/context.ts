@@ -5,14 +5,19 @@ const prisma = new PrismaClient({
   log: ["query"],
 });
 
+type User = {
+  id: string;
+  role: string;
+};
+
 export type Context = {
   prisma: PrismaClient;
   res: any; // TODO: fix any
-  user: any; // TODO: fix any
+  user: User | undefined;
 };
 
-const getUser = async (token: string) => {
-  if (!token) return null;
+const getUser = async (token: string): Promise<User | undefined> => {
+  if (!token) return undefined;
 
   // decode the jwt and get the userId
   const { userId } = <{ userId: string }>(
@@ -26,14 +31,15 @@ const getUser = async (token: string) => {
       },
     });
 
-    if (!user) return null;
+    if (!user) return undefined;
 
     return {
       id: user.id,
       role: user.role,
     };
   } catch (error) {
-    return console.error({ error });
+    console.error({ error });
+    return undefined;
   }
 };
 

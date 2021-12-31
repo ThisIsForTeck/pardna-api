@@ -1,12 +1,15 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Context } from "../context";
+import getUserIdFromContext from "../utils/geUserIdFromContext";
 
 enum Frequency {
   DAILY = "DAILY",
   WEEKLY = "WEEKLY",
   MONTHLY = "MONTHLY",
 }
+
+type ConnectArgs = { id: string };
 
 type Participant = {
   name: string;
@@ -26,12 +29,25 @@ type LogInArgs = {
 
 type CreatePardnaArgs = {
   name: string;
-  participants: Participant[];
-  sumOfHand: number;
-  drawingFrequency: Frequency;
-  drawDay: number;
+  participants?: Participant[];
+  sumOfHand?: number;
+  drawingFrequency?: Frequency;
+  drawDay?: number;
   startDate: Date;
-  duration: number;
+  duration?: number;
+};
+
+type UpdatePardnaArgs = {
+  id: string;
+  name?: string;
+  addParticipants: Participant[];
+  removeParticipants: ConnectArgs[];
+  updateParticipants: Participant[];
+  sumOfHand?: number;
+  drawingFrequency?: Frequency;
+  drawDay?: number;
+  startDate?: Date;
+  duration?: number;
 };
 
 const Mutations = {
@@ -127,12 +143,17 @@ const Mutations = {
   },
   createPardna: async (
     parent: any,
-    { name, participants, sumOfHand, drawingFrequency }: CreatePardnaArgs,
+    {
+      name,
+      participants,
+      startDate,
+      sumOfHand,
+      drawingFrequency,
+    }: CreatePardnaArgs,
     context: Context,
   ) => {
-    const {
-      user: { id: userId },
-    } = context;
+    // TODO: destructing id from "USER | undefined" kept throwing errors so using function - look into this
+    const userId = getUserIdFromContext(context);
 
     // create pardna in the db
     return context.prisma.pardna.create({
@@ -146,21 +167,65 @@ const Mutations = {
         participants: {
           create: participants?.map(participant => participant) || undefined,
         },
+        startDate,
         sumOfHand,
         drawingFrequency,
       },
     });
   },
-  // addParticipants: async (
-  //   parent: any,
-  //   { participants }: CreatePardnaArgs,
-  //   context: Context,
-  // ) => {},
-  // removeParticipants: async (
-  //   parent: any,
-  //   { participants }: CreatePardnaArgs,
-  //   context: Context,
-  // ) => {},
+  updatePardna: async (
+    parent: any,
+    {
+      id,
+      name,
+      addParticipants,
+      removeParticipants,
+      updateParticipants,
+      startDate,
+      sumOfHand,
+      drawingFrequency,
+    }: UpdatePardnaArgs,
+    context: Context,
+  ) => {
+    const participtantsUpdate: any = {}; // TODO: fix any
+    const participantsUpdated =
+      typeof addParticipants !== "undefined" ||
+      typeof removeParticipants !== "undefined" ||
+      typeof updateParticipants !== "undefined";
+
+    if (addParticipants?.length) {
+      participtantsUpdate.create = addParticipants;
+    }
+
+    if (removeParticipants?.length) {
+      participtantsUpdate.deleteMany = removeParticipants;
+    }
+
+    if (updateParticipants?.length) {
+      // TODO: do some update here
+    }
+
+    return context.prisma.pardna.update({
+      where: {
+        id,
+        // banker: userId, // BUG: can't filter on banker, need this to only allow bankers to update a pardna - https://github.com/prisma/prisma1/issues/4531
+      },
+      data: {
+        name,
+        participants: participantsUpdated
+          ? {
+              ...participtantsUpdate,
+            }
+          : undefined,
+        startDate,
+        sumOfHand,
+        drawingFrequency,
+      },
+      include: {
+        participants: true,
+      },
+    });
+  },
 };
 
 export default Mutations;
