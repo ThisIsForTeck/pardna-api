@@ -20,44 +20,104 @@ enum Frequency {
   MONTHLY
 }
 
+enum PaymentType {
+  PAYOUT
+  CONTRIBUTION
+  BANKERFEE
+}
+
+enum PeriodType {
+  DAY
+  WEEK
+  MONTH
+}
+
 model User {
-  id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  id        String    @id @default(dbgenerated()) @map("_id") @db.ObjectId
   firstName String
   lastName  String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(USER)
+  role      Role      @default(USER)
   pardna    Pardna?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  payment   Payment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("users")
 }
 
 model Participant {
-  id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  id        String    @id @default(dbgenerated()) @map("_id") @db.ObjectId
   name      String
-  pardna    Pardna?  @relation(fields: [pardnaId], references: [id])
-  pardnaId  String?  @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  email     String    @unique
+  pardna    Pardna?   @relation(fields: [pardnaId], references: [id])
+  pardnaId  String?   @db.ObjectId
+  payments  Payment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("participants")
 }
 
 model Pardna {
-  id               String        @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  name             String?
-  banker           User          @relation(fields: [userId], references: [id])
-  userId           String        @unique @db.ObjectId
-  participants     Participant[] // TODO: max 6
-  sumOfHand        Float         @default(10.00) // TODO: max £50
-  drawingFrequency Frequency     @default(MONTHLY)
-  drawDay          Int           @default(1) // e.g 01, 15, 30
-  startDate        DateTime
-  duration         Int           @default(12) // number of months
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                 String        @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  name               String?
+  banker             User          @relation(fields: [userId], references: [id])
+  userId             String        @unique @db.ObjectId
+  bankerFee          Float         @default(0.1)
+  participants       Participant[] // TODO: max 6
+  contributionAmount Float         @default(10.00) // TODO: max £50
+  ledger             Ledger?
+  startDate          DateTime
+  duration           Int           @default(12) // number of months
+  // potAmount - should be calculated field
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   @@map("pardnas")
+}
+
+// TODO: add calculated overdue field
+model Payment {
+  id            String       @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  type          PaymentType
+  dueDate       DateTime     @default(now())
+  settled       Boolean      @default(false)
+  settledDate   DateTime?
+  user          User?        @relation(fields: [userId], references: [id])
+  userId        String?      @db.ObjectId
+  participant   Participant? @relation(fields: [participantId], references: [id])
+  participantId String?      @db.ObjectId
+  period        Period?      @relation(fields: [periodId], references: [id])
+  periodId      String?      @db.ObjectId
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("payments")
+}
+
+model Period {
+  id        String     @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  type      PeriodType
+  number    Int
+  payments  Payment[] // TODO: somehow autogenerate all future payment records based on participants and update even when they change etc
+  ledger    Ledger     @relation(fields: [ledgerId], references: [id])
+  ledgerId  String     @db.ObjectId
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("periods")
+}
+
+model Ledger {
+  id               String    @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  paymentFrequency Frequency @default(MONTHLY)
+  periods          Period[]
+  pardna           Pardna    @relation(fields: [pardnaId], references: [id])
+  pardnaId         String    @unique @db.ObjectId
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("ledgers")
 }

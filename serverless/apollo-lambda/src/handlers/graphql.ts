@@ -21,8 +21,21 @@ const typeDefs = gql`
     MONTHLY
   }
 
+  enum PaymentType {
+    PAYOUT
+    CONTRIBUTION
+    BANKERFEE
+  }
+
+  enum PeriodType {
+    DAY
+    WEEK
+    MONTH
+  }
+
   input ParticipantInput {
     name: String!
+    email: String!
   }
 
   input RemoveParticipantInput {
@@ -32,6 +45,10 @@ const typeDefs = gql`
   input UpdateParticipantInput {
     id: String!
     name: String!
+  }
+
+  input LedgerInput {
+    paymentFrequency: Frequency
   }
 
   type SuccessMessage {
@@ -51,6 +68,39 @@ const typeDefs = gql`
   type Participant {
     id: String!
     name: String!
+    email: String!
+    payments: [Payment]
+  }
+
+  type Payment {
+    id: String!
+    type: PaymentType
+    week: Int
+    dueDate: Date
+    settled: Boolean
+    settledDate: Date
+    user: User
+    participant: Participant
+    createdAt: Date
+    updatedAt: Date
+  }
+
+  type Period {
+    id: String!
+    type: PeriodType
+    number: Int
+    payments: [Payment]
+    ledger: Ledger
+    createdAt: Date
+    updatedAt: Date
+  }
+
+  type Ledger {
+    id: String!
+    paymentFrequency: Frequency
+    periods: [Period]
+    createdAt: Date
+    updatedAt: Date
   }
 
   type Pardna {
@@ -58,9 +108,8 @@ const typeDefs = gql`
     name: String
     banker: User
     participants: [Participant]
-    sumOfHand: Int
-    drawingFrequency: Frequency
-    drawDay: Int
+    contributionAmount: Int
+    ledger: Ledger
     startDate: Date
     duration: Int
     endDate: Date
@@ -84,8 +133,9 @@ const typeDefs = gql`
       name: String
       participants: [ParticipantInput]
       startDate: Date
-      sumOfHand: Int
-      drawingFrequency: Frequency
+      contributionAmount: Int
+      ledger: LedgerInput
+      paymentFrequency: Frequency
     ): Pardna
     updatePardna(
       id: String
@@ -94,8 +144,8 @@ const typeDefs = gql`
       removeParticipants: [RemoveParticipantInput]
       updateParticipants: [UpdateParticipantInput]
       startDate: Date
-      sumOfHand: Int
-      drawingFrequency: Frequency
+      contributionAmount: Int
+      paymentFrequency: Frequency
     ): Pardna
   }
 `;
