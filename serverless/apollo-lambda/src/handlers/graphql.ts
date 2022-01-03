@@ -77,6 +77,7 @@ const typeDefs = gql`
     type: PaymentType
     week: Int
     dueDate: Date
+    overdue: Boolean
     settled: Boolean
     settledDate: Date
     user: User

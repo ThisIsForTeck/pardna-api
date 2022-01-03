@@ -1,5 +1,6 @@
 import { GraphQLScalarType, Kind } from "graphql";
 import add from "date-fns/add";
+import isPast from "date-fns/isPast";
 
 const Custom = {
   Date: new GraphQLScalarType({
@@ -19,10 +20,15 @@ const Custom = {
     },
   }),
   Pardna: {
-    endDate: async (parent: any) =>
+    endDate: (
+      parent: any, // TODO: set parent type to Pardna
+    ) =>
       add(parent.startDate, {
         months: parent.duration,
       }),
+  },
+  Payment: {
+    overdue: (parent: any) => isPast(parent.dueDate) && !parent.settled, // TODO: set parent type to Payment
   },
 };
 
