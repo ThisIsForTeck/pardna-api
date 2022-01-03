@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import isPast from "date-fns/isPast";
 import jwt from "jsonwebtoken";
 import { Context } from "../context";
 import { Ledger, Participant } from "../types";
@@ -188,11 +189,40 @@ const Mutations = {
     UpdatePardnaArgs,
     context: Context,
   ) => {
+    let ledgerCreate;
+    let updatedPardna;
     const participtantsUpdate: any = {}; // TODO: fix any
     const participantsUpdated =
       typeof addParticipants !== "undefined" ||
       typeof removeParticipants !== "undefined" ||
       typeof updateParticipants !== "undefined";
+
+    const financialImpactingChange =
+      removeParticipants?.length ||
+      addParticipants?.length ||
+      startDate ||
+      contributionAmount ||
+      duration;
+
+    const pardna = await context.prisma.pardna.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        participants: true,
+        ledger: true,
+      },
+    });
+
+    if (!pardna) {
+      throw new Error("Pardna with that id does not exist");
+    }
+
+    if (financialImpactingChange && isPast(pardna.startDate)) {
+      throw new Error(
+        "You cannot make finanancial impacting changes to a Pardna once the start date has passed.",
+      );
+    }
 
     if (addParticipants?.length) {
       participtantsUpdate.create = addParticipants;
@@ -206,7 +236,7 @@ const Mutations = {
       // TODO: do some update here
     }
 
-    return context.prisma.pardna.update({
+    updatedPardna = await context.prisma.pardna.update({
       where: {
         id,
         // banker: userId, // BUG: can't filter on banker, need this to only allow bankers to update a pardna - https://github.com/prisma/prisma1/issues/4531
@@ -221,21 +251,54 @@ const Mutations = {
         startDate,
         contributionAmount,
         duration,
-        // ledger,
       },
       include: {
         participants: true,
-        ledger: {
-          include: {
-            periods: {
-              include: {
-                payments: true,
+        ledger: true,
+      },
+    });
+
+    // delete existing ledger and cascade delete all related periods and payments
+    if (financialImpactingChange) {
+      await context.prisma.ledger.delete({
+        where: {
+          id: updatedPardna.ledger?.id,
+        },
+      });
+
+      ledgerCreate = createLedger(
+        {},
+        updatedPardna.participants,
+        updatedPardna.startDate,
+        updatedPardna.duration,
+      );
+
+      updatedPardna = await context.prisma.pardna.update({
+        where: {
+          id,
+          // banker: userId, // BUG: can't filter on banker, need this to only allow bankers to update a pardna - https://github.com/prisma/prisma1/issues/4531
+        },
+        data: {
+          ledger: {
+            create: ledgerCreate,
+          },
+        },
+        include: {
+          participants: true,
+          ledger: {
+            include: {
+              periods: {
+                include: {
+                  payments: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+    }
+
+    return updatedPardna;
   },
 };
 
