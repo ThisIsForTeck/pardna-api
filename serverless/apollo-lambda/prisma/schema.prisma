@@ -51,7 +51,7 @@ model Participant {
   id        String    @id @default(dbgenerated()) @map("_id") @db.ObjectId
   name      String
   email     String    @unique
-  pardna    Pardna?   @relation(fields: [pardnaId], references: [id])
+  pardna    Pardna?   @relation(fields: [pardnaId], references: [id], onDelete: Cascade)
   pardnaId  String?   @db.ObjectId
   payments  Payment[]
   createdAt DateTime  @default(now())
