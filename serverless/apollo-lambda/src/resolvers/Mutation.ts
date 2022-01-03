@@ -1,19 +1,11 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Context } from "../context";
+import { Ledger, Participant } from "../types";
+import createLedger from "../utils/createLedger";
 import getUserIdFromContext from "../utils/geUserIdFromContext";
 
-enum Frequency {
-  DAILY = "DAILY",
-  WEEKLY = "WEEKLY",
-  MONTHLY = "MONTHLY",
-}
-
 type ConnectArgs = { id: string };
-
-type Participant = {
-  name: string;
-};
 
 type CreateUserArgs = {
   firstName: string;
@@ -30,11 +22,10 @@ type LogInArgs = {
 type CreatePardnaArgs = {
   name: string;
   participants?: Participant[];
-  sumOfHand?: number;
-  drawingFrequency?: Frequency;
-  drawDay?: number;
+  contributionAmount?: number;
   startDate: Date;
   duration?: number;
+  ledger: Ledger;
 };
 
 type UpdatePardnaArgs = {
@@ -43,9 +34,8 @@ type UpdatePardnaArgs = {
   addParticipants: Participant[];
   removeParticipants: ConnectArgs[];
   updateParticipants: Participant[];
-  sumOfHand?: number;
-  drawingFrequency?: Frequency;
-  drawDay?: number;
+  contributionAmount?: number;
+  ledger?: Ledger;
   startDate?: Date;
   duration?: number;
 };
@@ -146,14 +136,21 @@ const Mutations = {
     {
       name,
       participants,
+      contributionAmount,
       startDate,
-      sumOfHand,
-      drawingFrequency,
+      duration,
+      ledger,
     }: CreatePardnaArgs,
     context: Context,
   ) => {
-    // TODO: destructing id from "USER | undefined" kept throwing errors so using function - look into this
+    // TODO: destructuring id from "USER | undefined" kept throwing errors so using function - look into this
     const userId = getUserIdFromContext(context);
+    const ledgerCreate = createLedger(
+      ledger,
+      participants,
+      startDate,
+      duration,
+    );
 
     // create pardna in the db
     return context.prisma.pardna.create({
@@ -165,11 +162,14 @@ const Mutations = {
           },
         },
         participants: {
-          create: participants?.map(participant => participant) || undefined,
+          create: participants || undefined,
         },
+        contributionAmount,
         startDate,
-        sumOfHand,
-        drawingFrequency,
+        duration,
+        ledger: {
+          create: ledgerCreate,
+        },
       },
     });
   },
@@ -182,9 +182,10 @@ const Mutations = {
       removeParticipants,
       updateParticipants,
       startDate,
-      sumOfHand,
-      drawingFrequency,
-    }: UpdatePardnaArgs,
+      contributionAmount,
+      duration,
+    }: // ledger,
+    UpdatePardnaArgs,
     context: Context,
   ) => {
     const participtantsUpdate: any = {}; // TODO: fix any
@@ -218,11 +219,21 @@ const Mutations = {
             }
           : undefined,
         startDate,
-        sumOfHand,
-        drawingFrequency,
+        contributionAmount,
+        duration,
+        // ledger,
       },
       include: {
         participants: true,
+        ledger: {
+          include: {
+            periods: {
+              include: {
+                payments: true,
+              },
+            },
+          },
+        },
       },
     });
   },
