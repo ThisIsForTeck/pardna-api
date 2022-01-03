@@ -78,7 +78,6 @@ model Pardna {
   @@map("pardnas")
 }
 
-// TODO: add calculated overdue field
 model Payment {
   id            String       @id @default(dbgenerated()) @map("_id") @db.ObjectId
   type          PaymentType
