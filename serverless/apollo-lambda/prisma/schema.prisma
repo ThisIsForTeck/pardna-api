@@ -88,7 +88,7 @@ model Payment {
   userId        String?      @db.ObjectId
   participant   Participant? @relation(fields: [participantId], references: [id])
   participantId String?      @db.ObjectId
-  period        Period?      @relation(fields: [periodId], references: [id])
+  period        Period?      @relation(fields: [periodId], references: [id], onDelete: Cascade)
   periodId      String?      @db.ObjectId
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -101,7 +101,7 @@ model Period {
   type      PeriodType
   number    Int
   payments  Payment[] // TODO: somehow autogenerate all future payment records based on participants and update even when they change etc
-  ledger    Ledger     @relation(fields: [ledgerId], references: [id])
+  ledger    Ledger     @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
   ledgerId  String     @db.ObjectId
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
