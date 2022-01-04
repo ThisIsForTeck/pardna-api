@@ -148,6 +148,7 @@ const typeDefs = gql`
       contributionAmount: Int
       paymentFrequency: Frequency
     ): Pardna
+    deletePardna(id: String): Pardna
   }
 `;
 
