@@ -41,6 +41,10 @@ type UpdatePardnaArgs = {
   duration?: number;
 };
 
+type DeletePardnaArgs = {
+  id: string;
+};
+
 const Mutations = {
   createUser: async (
     parent: any,
@@ -185,8 +189,7 @@ const Mutations = {
       startDate,
       contributionAmount,
       duration,
-    }: // ledger,
-    UpdatePardnaArgs,
+    }: UpdatePardnaArgs,
     context: Context,
   ) => {
     let ledgerCreate;
@@ -299,6 +302,13 @@ const Mutations = {
     }
 
     return updatedPardna;
+  },
+  deletePardna: (parent: any, { id }: DeletePardnaArgs, context: Context) => {
+    return context.prisma.pardna.delete({
+      where: {
+        id,
+      },
+    });
   },
 };
 

@@ -113,7 +113,7 @@ model Ledger {
   id               String    @id @default(dbgenerated()) @map("_id") @db.ObjectId
   paymentFrequency Frequency @default(MONTHLY)
   periods          Period[]
-  pardna           Pardna    @relation(fields: [pardnaId], references: [id])
+  pardna           Pardna    @relation(fields: [pardnaId], references: [id], onDelete: Cascade)
   pardnaId         String    @unique @db.ObjectId
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
