@@ -124,6 +124,7 @@ const typeDefs = gql`
   type Query {
     users: [User]
     pardnas: [Pardna]
+    pardna(id: String!): Pardna
   }
 
   type Mutation {
