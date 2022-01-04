@@ -1,4 +1,5 @@
 import { Context } from "../context";
+import getUserIdFromContext from "../utils/geUserIdFromContext";
 
 type PardnaArgs = {
   id: string;
@@ -7,8 +8,17 @@ type PardnaArgs = {
 const Query = {
   users: (parent: any, args: any, context: Context) =>
     context.prisma.user.findMany(),
-  pardnas: (parent: any, args: any, context: Context) =>
-    context.prisma.pardna.findMany({
+  pardnas: (parent: any, args: any, context: Context) => {
+    const userId = getUserIdFromContext(context);
+
+    return context.prisma.pardna.findMany({
+      where: {
+        banker: {
+          is: {
+            id: userId,
+          },
+        },
+      },
       include: {
         participants: {
           include: {
@@ -16,10 +26,13 @@ const Query = {
           },
         },
       },
-    }),
-  pardna: (parent: any, { id }: PardnaArgs, context: Context) =>
+    });
+  },
+  pardna: async (parent: any, { id }: PardnaArgs, context: Context) =>
     context.prisma.pardna.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
       include: {
         participants: {
           include: {
