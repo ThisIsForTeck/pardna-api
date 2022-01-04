@@ -116,6 +116,11 @@ const typeDefs = gql`
     endDate: Date
   }
 
+  type LogInResponse {
+    user: User!
+    token: String!
+  }
+
   type Query {
     users: [User]
     pardnas: [Pardna]
@@ -128,7 +133,7 @@ const typeDefs = gql`
       email: String!
       password: String!
     ): User!
-    logIn(email: String!, password: String!): User!
+    logIn(email: String!, password: String!): LogInResponse!
     logOut: SuccessMessage!
     createPardna(
       name: String

@@ -129,7 +129,10 @@ const Mutations = {
       maxAge: 1000 * 60 * 60 * 24 * 365,
     });
 
-    return user;
+    return {
+      user,
+      token,
+    };
   },
   logOut: (parent: any, args: {}, context: Context) => {
     context.res.clearCookie("token");
