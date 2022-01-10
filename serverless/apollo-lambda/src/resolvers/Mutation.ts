@@ -88,7 +88,7 @@ const Mutations = {
     });
 
     // finally return user
-    return user;
+    return { user, token };
   },
   logIn: async (
     parent: any,
