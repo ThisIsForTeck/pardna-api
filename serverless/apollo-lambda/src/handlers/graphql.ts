@@ -69,7 +69,10 @@ const typeDefs = gql`
     id: String!
     name: String!
     email: String!
+    pardna: Pardna!
     payments: [Payment]
+    createdAt: Date
+    updatedAt: Date
   }
 
   type Payment {
@@ -110,6 +113,7 @@ const typeDefs = gql`
     banker: User
     participants: [Participant]
     contributionAmount: Int
+    bankerFee: Float
     ledger: Ledger
     startDate: Date
     duration: Int
@@ -130,6 +134,10 @@ const typeDefs = gql`
     users: [User]
     pardnas: [Pardna]
     pardna(id: String!): Pardna
+    participants: [Participant]
+    participant(id: String!): Participant
+    payments: [Payment]
+    payment(id: String!): Payment
   }
 
   type Mutation {
@@ -143,23 +151,28 @@ const typeDefs = gql`
     logOut: SuccessMessage!
     createPardna(
       name: String
+      paymentFrequency: Frequency
       participants: [ParticipantInput]
       startDate: Date
+      duration: Int
       contributionAmount: Int
-      ledger: LedgerInput
-      paymentFrequency: Frequency
+      bankerFee: Float
     ): Pardna
     updatePardna(
-      id: String
+      id: String!
       name: String
+      paymentFrequency: Frequency
+      startDate: Date
+      duration: Int
+      contributionAmount: Int
+      bankerFee: Float
       addParticipants: [ParticipantInput]
       removeParticipants: [RemoveParticipantInput]
-      updateParticipants: [UpdateParticipantInput]
-      startDate: Date
-      contributionAmount: Int
-      paymentFrequency: Frequency
     ): Pardna
     deletePardna(id: String): Pardna
+    updatePayment(id: String, settled: Boolean): Payment
+    updateParticipant(id: String, name: String, email: String): Participant
+    deleteParticipant(id: String): Participant
   }
 `;
 

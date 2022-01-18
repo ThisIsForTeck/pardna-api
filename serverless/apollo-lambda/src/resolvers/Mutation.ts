@@ -2,9 +2,15 @@ import bcrypt from "bcryptjs";
 import isPast from "date-fns/isPast";
 import jwt from "jsonwebtoken";
 import { Context } from "../context";
-import { Ledger, Participant } from "../types";
+import { Participant } from "../types";
 import createLedger from "../utils/createLedger";
 import getUserIdFromContext from "../utils/geUserIdFromContext";
+
+enum Frequency {
+  DAILY = "DAILY",
+  WEEKLY = "WEEKLY",
+  MONTHLY = "MONTHLY",
+}
 
 type ConnectArgs = { id: string };
 
@@ -22,26 +28,42 @@ type LogInArgs = {
 
 type CreatePardnaArgs = {
   name: string;
+  paymentFrequency?: Frequency;
   participants?: Participant[];
-  contributionAmount?: number;
   startDate: Date;
   duration?: number;
-  ledger: Ledger;
+  contributionAmount?: number;
+  bankerFee?: number;
 };
 
 type UpdatePardnaArgs = {
   id: string;
   name?: string;
-  addParticipants: Participant[];
-  removeParticipants: ConnectArgs[];
-  updateParticipants: Participant[];
-  contributionAmount?: number;
-  ledger?: Ledger;
+  paymentFrequency?: Frequency;
   startDate?: Date;
   duration?: number;
+  contributionAmount?: number;
+  bankerFee?: number;
+  addParticipants: Participant[];
+  removeParticipants: ConnectArgs[];
 };
 
 type DeletePardnaArgs = {
+  id: string;
+};
+
+type UpdatePaymentArgs = {
+  id: string;
+  settled: boolean;
+};
+
+type UpdateParticipantArgs = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+type DeleteParticipantArgs = {
   id: string;
 };
 
@@ -143,18 +165,19 @@ const Mutations = {
     parent: any,
     {
       name,
+      paymentFrequency,
       participants,
-      contributionAmount,
       startDate,
       duration,
-      ledger,
+      contributionAmount,
+      bankerFee,
     }: CreatePardnaArgs,
     context: Context,
   ) => {
     // TODO: destructuring id from "USER | undefined" kept throwing errors so using function - look into this
     const userId = getUserIdFromContext(context);
     const ledgerCreate = createLedger(
-      ledger,
+      { paymentFrequency },
       participants,
       startDate,
       duration,
@@ -173,6 +196,7 @@ const Mutations = {
           create: participants || undefined,
         },
         contributionAmount,
+        bankerFee,
         startDate,
         duration,
         ledger: {
@@ -186,12 +210,13 @@ const Mutations = {
     {
       id,
       name,
+      paymentFrequency,
+      startDate,
+      duration,
+      contributionAmount,
+      bankerFee,
       addParticipants,
       removeParticipants,
-      updateParticipants,
-      startDate,
-      contributionAmount,
-      duration,
     }: UpdatePardnaArgs,
     context: Context,
   ) => {
@@ -200,15 +225,16 @@ const Mutations = {
     const participtantsUpdate: any = {}; // TODO: fix any
     const participantsUpdated =
       typeof addParticipants !== "undefined" ||
-      typeof removeParticipants !== "undefined" ||
-      typeof updateParticipants !== "undefined";
+      typeof removeParticipants !== "undefined";
 
     const financialImpactingChange =
-      removeParticipants?.length ||
-      addParticipants?.length ||
+      paymentFrequency ||
       startDate ||
       contributionAmount ||
-      duration;
+      bankerFee ||
+      duration ||
+      removeParticipants?.length ||
+      addParticipants?.length;
 
     const pardna = await context.prisma.pardna.findUnique({
       where: {
@@ -238,10 +264,6 @@ const Mutations = {
       participtantsUpdate.deleteMany = removeParticipants;
     }
 
-    if (updateParticipants?.length) {
-      // TODO: do some update here
-    }
-
     updatedPardna = await context.prisma.pardna.update({
       where: {
         id,
@@ -256,7 +278,13 @@ const Mutations = {
           : undefined,
         startDate,
         contributionAmount,
+        bankerFee,
         duration,
+        ledger: {
+          update: {
+            paymentFrequency,
+          },
+        },
       },
       include: {
         participants: true,
@@ -308,6 +336,59 @@ const Mutations = {
   },
   deletePardna: (parent: any, { id }: DeletePardnaArgs, context: Context) => {
     return context.prisma.pardna.delete({
+      where: {
+        id,
+      },
+    });
+  },
+  updatePayment: (
+    parent: any,
+    { id, settled }: UpdatePaymentArgs,
+    context: Context,
+  ) => {
+    const updates = {
+      settled,
+    };
+
+    if (settled) {
+      updates.settledDate = new Date();
+    } else {
+      updates.settledDate = null;
+    }
+
+    return context.prisma.payment.update({
+      where: {
+        id,
+      },
+      data: {
+        ...updates,
+      },
+      include: {
+        participant: true,
+      },
+    });
+  },
+  updateParticipant: (
+    parent: any,
+    { id, name, email }: UpdateParticipantArgs,
+    context: Context,
+  ) => {
+    return context.prisma.participant.update({
+      where: {
+        id,
+      },
+      data: {
+        name,
+        email,
+      },
+    });
+  },
+  deleteParticipant: (
+    parent: any,
+    { id }: DeleteParticipantArgs,
+    context: Context,
+  ) => {
+    return context.prisma.participant.delete({
       where: {
         id,
       },

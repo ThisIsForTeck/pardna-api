@@ -29,6 +29,7 @@ const Custom = {
   },
   Payment: {
     overdue: (parent: any) => isPast(parent.dueDate) && !parent.settled, // TODO: set parent type to Payment
+    // TODO: should settled be calculated field too based on settledDate?
   },
 };
 

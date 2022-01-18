@@ -65,9 +65,9 @@ model Pardna {
   name               String?
   banker             User          @relation(fields: [userId], references: [id])
   userId             String        @unique @db.ObjectId
-  bankerFee          Float         @default(0.1)
+  bankerFee          Float         @default(10) // %
   participants       Participant[] // TODO: max 6
-  contributionAmount Float         @default(10.00) // TODO: max £50
+  contributionAmount Int           @default(1000) // lowest denomination e.g pennies. // TODO: max £50
   ledger             Ledger?
   startDate          DateTime
   duration           Int           @default(12) // number of months
