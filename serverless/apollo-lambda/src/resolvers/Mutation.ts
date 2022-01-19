@@ -346,14 +346,16 @@ const Mutations = {
     { id, settled }: UpdatePaymentArgs,
     context: Context,
   ) => {
-    const updates = {
+    const updates: {
+      settled: boolean;
+      settledDate: Date | null;
+    } = {
       settled,
+      settledDate: null,
     };
 
     if (settled) {
       updates.settledDate = new Date();
-    } else {
-      updates.settledDate = null;
     }
 
     return context.prisma.payment.update({
