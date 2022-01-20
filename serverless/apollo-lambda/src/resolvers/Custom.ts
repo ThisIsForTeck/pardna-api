@@ -22,10 +22,24 @@ const Custom = {
   Pardna: {
     endDate: (
       parent: any, // TODO: set parent type to Pardna
-    ) =>
-      add(parent.startDate, {
-        months: parent.duration,
-      }),
+    ) => {
+      let addDuration;
+
+      switch (parent.ledger?.paymentFrequency) {
+        case "DAILY":
+          addDuration = { days: parent.duration };
+          break;
+        case "WEEKLY":
+          addDuration = { weeks: parent.duration };
+          break;
+        case "MONTHLY":
+        default:
+          addDuration = { months: parent.duration };
+          break;
+      }
+
+      return add(parent.startDate, addDuration);
+    },
   },
   Payment: {
     overdue: (parent: any) => isPast(parent.dueDate) && !parent.settled, // TODO: set parent type to Payment

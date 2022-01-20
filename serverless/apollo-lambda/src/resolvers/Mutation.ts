@@ -126,7 +126,7 @@ const Mutations = {
 
     if (!user) {
       throw new Error(
-        "Hmm, we couldn't find that email in our records. Try again.",
+        "email: Hmm, we couldn't find that email in our records. Try again.",
       );
     }
 
@@ -135,7 +135,7 @@ const Mutations = {
 
     if (!valid) {
       throw new Error(
-        "Hmm, that password doesn't match the one we have on record. Try again.",
+        "password: Hmm, that password doesn't match the one we have on record. Try again.",
       );
     }
 
@@ -301,7 +301,7 @@ const Mutations = {
       });
 
       ledgerCreate = createLedger(
-        {},
+        { paymentFrequency },
         updatedPardna.participants,
         updatedPardna.startDate,
         updatedPardna.duration,

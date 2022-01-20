@@ -14,9 +14,22 @@ const createLedger = (
   let dates: Date[];
   const { paymentFrequency = "MONTHLY" } = initialLedgerData;
 
-  const endDate = add(new Date(startDate), {
-    months: duration,
-  });
+  let addDuration;
+
+  switch (paymentFrequency) {
+    case "DAILY":
+      addDuration = { days: duration };
+      break;
+    case "WEEKLY":
+      addDuration = { weeks: duration };
+      break;
+    case "MONTHLY":
+    default:
+      addDuration = { months: duration };
+      break;
+  }
+
+  const endDate = add(new Date(startDate), addDuration);
 
   // TODO: eachMonthOfInterval seems to return two dates in same month
   switch (paymentFrequency) {
