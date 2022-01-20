@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { Context } from "../context";
 import { Participant } from "../types";
 import createLedger from "../utils/createLedger";
+import capitalizeFirstLetter from "../utils/capitalizeFirstLetter";
 import getUserIdFromContext from "../utils/geUserIdFromContext";
 
 enum Frequency {
@@ -73,10 +74,12 @@ const Mutations = {
     { firstName, lastName, email, password }: CreateUserArgs,
     context: Context,
   ) => {
-    const lowerCaseEmail = email.toLowerCase();
+    const lowerCaseEmail = email.toLowerCase().trim();
 
     // TODO: do some kind of check for taken username aswell
-    const exists = await context.prisma.user.findUnique({ where: { email } });
+    const exists = await context.prisma.user.findUnique({
+      where: { email: lowerCaseEmail },
+    });
 
     if (exists) {
       throw new Error(
@@ -90,8 +93,8 @@ const Mutations = {
     // create user in the db
     const user = await context.prisma.user.create({
       data: {
-        firstName,
-        lastName,
+        firstName: capitalizeFirstLetter(firstName).trim(),
+        lastName: capitalizeFirstLetter(lastName).trim(),
         email: lowerCaseEmail,
         password: hashedPassword,
       },
@@ -117,10 +120,12 @@ const Mutations = {
     { email, password }: LogInArgs,
     context: Context,
   ) => {
+    const lowerCaseEmail = email.toLowerCase().trim();
+
     // check if a user with email exists
     const user = await context.prisma.user.findUnique({
       where: {
-        email,
+        email: lowerCaseEmail,
       },
     });
 
@@ -380,8 +385,8 @@ const Mutations = {
         id,
       },
       data: {
-        name,
-        email,
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
       },
     });
   },

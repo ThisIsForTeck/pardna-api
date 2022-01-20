@@ -71,7 +71,7 @@ const createLedger = (
             participant: {
               connectOrCreate: {
                 where: {
-                  email: participant.email,
+                  email: participant.email.toLowerCase().trim(),
                 },
                 create: participant,
               },
